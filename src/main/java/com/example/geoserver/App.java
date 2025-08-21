@@ -1,17 +1,20 @@
 // filepath: d:\PythonAutoPublish\GeoServerPublisherJava\src\main\java\com\example\geoserver\App.java
 package com.example.geoserver;
 
-import com.example.geoserver.model.BoundingBox;
-
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files; //处理文件路径
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Scanner;
 
+import com.example.geoserver.model.BoundingBox;
+
 public class App {
     public static void main(String[] args) throws Exception {
-        Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);    // 初始化命令行输入扫描器
 
         System.out.print("GeoServer URL (http://localhost:8080/geoserver): ");
         String geoserverUrl = sc.nextLine().trim();
@@ -38,6 +41,7 @@ public class App {
         String pass = sc.nextLine().trim();
         if (pass.isEmpty()) pass = "geoserver";
 
+        // 创建 GeoServerClient 实例，传入连接信息（后续所有操作都通过该实例执行）
         GeoServerClient gs = new GeoServerClient(geoserverUrl, user, pass);
 
         // Ensure workspace
