@@ -1,0 +1,4 @@
+com\example\geoserver\GeoServerClient.class
+com\example\geoserver\model\BoundingBox.class
+com\example\geoserver\ZipShapefilePublisher.class
+com\example\geoserver\App.class

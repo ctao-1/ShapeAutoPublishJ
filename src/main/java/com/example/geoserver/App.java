@@ -16,7 +16,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         Scanner sc = new Scanner(System.in);    // 初始化命令行输入扫描器
 
-        System.out.print("GeoServer URL (http://localhost:8080/geoserver): ");
+        System.out.print("GeoServer URL (default http://localhost:8080/geoserver) : ");
         String geoserverUrl = sc.nextLine().trim();
         if (geoserverUrl.isEmpty()) geoserverUrl = "http://localhost:8080/geoserver";
 
@@ -26,11 +26,12 @@ public class App {
         System.out.print("Datastore name (e.g., shapefile): ");
         String datastore = sc.nextLine().trim();
 
-        System.out.print("Folder or .shp path (e.g., D:/data/shps): ");
+        System.out.print("Folder or .shp path (e.g., F:/数据/156-3857.zip): ");
         String path = sc.nextLine().trim();
 
-        System.out.print("Style name (e.g., auto/point/line/polygon). Press Enter to keep empty: ");
+        System.out.print("Style name (e.g., auto/point/line/polygon) default: auto: ");
         String styleName = sc.nextLine().trim();
+        if (styleName.isEmpty()) styleName = "auto";
 
         // Credentials (simple prompt; or read from env)
         System.out.print("GeoServer username (default admin): ");
@@ -53,11 +54,23 @@ public class App {
         }
 
         // Resolve folder for datastore
-        Path input = Paths.get(path);
+        Path input = Paths.get(path);   //将字符串形式的路径（path参数）转换为Path对象（Java NIO 中的路径表示方式）
+        //isRegularFiles()是否是一个regular file(shp)
         if (Files.isRegularFile(input) && input.toString().toLowerCase(Locale.ROOT).endsWith(".shp")) {
-            input = input.getParent();
+            input = input.getParent();  //getParent() acquire parent directory
         }
-        String folder = input.toAbsolutePath().toString();
+        if (Files.isRegularFile(input) && input.toString().toLowerCase(Locale.ROOT).endsWith(".zip")) {
+            // get zip file base name without extension
+            String zipFileName = input.getFileName().toString();
+            int dot = zipFileName.lastIndexOf('.');
+            if (dot > 0) zipFileName = zipFileName.substring(0, dot);   //stripExt():delete the extension name of file
+
+            ZipShapefilePublisher zp = new ZipShapefilePublisher();
+            String zipDir = zp.ZipShapefileP(geoserverUrl, path, user, pass, workspace, datastore, zipFileName);  //getParent() acquire parent directory
+            input = Paths.get(zipDir);
+            // zipFileName is available here for later use if needed
+        }
+        String folder = input.toAbsolutePath().toString();  //将路径转换为绝对路径,字符串形式的路径，无论输入是shapefile or folder
 
         // Ensure datastore
         if (!gs.datastoreExists(workspace, datastore)) {
@@ -69,10 +82,11 @@ public class App {
 
         // Walk *.shp and publish
         int count = 0;
+        //Files.newDirectoryStream() create a directorystream，traverse the directory specified by input path
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(input, "*.shp")) {
             for (Path shp : stream) {
-                String layer = stripExt(shp.getFileName().toString());
-                count++;
+                String layer = stripExt(shp.getFileName().toString());  //stripExt():delete the extension name of file
+                count++; //record the file number
                 publishOne(gs, workspace, datastore, layer, styleName);
             }
         } catch (IOException e) {

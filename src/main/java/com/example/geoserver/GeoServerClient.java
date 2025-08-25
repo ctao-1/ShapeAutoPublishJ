@@ -130,8 +130,9 @@ public class GeoServerClient {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
-        var res = http.send(req, HttpResponse.BodyHandlers.ofString());
-        return res.statusCode() == 201;
+    var res = http.send(req, HttpResponse.BodyHandlers.ofString());
+    // GeoServer may return 201 (created) or 200 (already exists / synchronous response).
+    return res.statusCode() == 201 || res.statusCode() == 200;
     }
 
     public boolean setDefaultStyle(String ws, String layer, String styleName) throws Exception {
