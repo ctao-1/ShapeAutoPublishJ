@@ -184,6 +184,23 @@ public class GeoServerClient {
         return Optional.empty();
     }
 
+    /**
+     * Return the declared SRS for a featureType (e.g. "EPSG:4326"), or null if not present.
+     */
+    public String getFeatureTypeSRS(String ws, String store, String layer) throws Exception {
+        String url = baseUrl + "/rest/workspaces/" + enc(ws) + "/datastores/" + enc(store)
+                + "/featuretypes/" + enc(layer) + ".json";
+        var req = reqBuilder(url).GET().build();
+        var res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() != 200) return null;
+        JsonNode root = mapper.readTree(res.body()).path("featureType");
+        // common property names: "srs", "nativeCRS", "nativeSRS"
+        if (root.has("srs") && !root.path("srs").isNull()) return root.path("srs").asText();
+        if (root.has("nativeCRS") && !root.path("nativeCRS").isNull()) return root.path("nativeCRS").asText();
+        if (root.has("nativeSRS") && !root.path("nativeSRS").isNull()) return root.path("nativeSRS").asText();
+        return null;
+    }
+
     public String buildOpenLayersPreview(String ws, String layer, BoundingBox bbox3857OrNative) {
         // Use EPSG:3857 in preview; if your data is not 3857, adjust accordingly
         String params = "service=WMS&version=1.1.0&request=GetMap"
@@ -195,6 +212,27 @@ public class GeoServerClient {
         return baseUrl + "/" + enc(ws) + "/wms?" + params;
     }
 
+    /**
+     * Build an OpenLayers preview URL but try to read the layer's declared SRS from GeoServer.
+     * If the featureType declares an SRS, that will be used; otherwise defaults to EPSG:3857.
+     * Note: this does not reproject the bbox; ensure the provided bbox is in the chosen SRS.
+     */
+    public String buildOpenLayersPreview(String ws, String store, String layer, BoundingBox bbox) {
+        String srs = "EPSG:3857";
+        try {
+            String declared = getFeatureTypeSRS(ws, store, layer);
+            if (declared != null && !declared.isBlank()) srs = declared;
+        } catch (Exception e) {
+            // ignore and fall back to default
+        }
+        String params = "service=WMS&version=1.1.0&request=GetMap"
+                + "&layers=" + urlEnc(ws + ":" + layer)
+                + "&bbox=" + urlEnc(bbox.toString())
+                + "&width=768&height=494"
+                + "&srs=" + urlEnc(srs)
+                + "&styles=&format=" + urlEnc("application/openlayers");
+        return baseUrl + "/" + enc(ws) + "/wms?" + params;
+    }
     private static boolean missing(JsonNode n) {
         return n == null || n.isMissingNode() || n.isNull();
     }
