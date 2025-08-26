@@ -1,4 +1,5 @@
 // filepath: d:\PythonAutoPublish\GeoServerPublisherJava\src\main\java\com\example\geoserver\GeoServerClient.java
+//仅封装 GeoServer REST 调用
 package com.example.geoserver;
 
 import com.example.geoserver.model.BoundingBox;

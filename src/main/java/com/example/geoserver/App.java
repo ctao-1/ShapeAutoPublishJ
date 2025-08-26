@@ -1,4 +1,5 @@
 // filepath: d:\PythonAutoPublish\GeoServerPublisherJava\src\main\java\com\example\geoserver\App.java
+//CLI / 程序入口，仅负责参数解析与调用 Service
 package com.example.geoserver;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class App {
         System.out.print("Folder or .shp path (e.g., F:/数据/156-3857.zip): ");
         String path = sc.nextLine().trim();
 
-        System.out.print("Style name (e.g., auto/point/line/polygon) default: auto: ");
+        System.out.print("Style name (e.g., auto/point/line/polygon) default auto: ");
         String styleName = sc.nextLine().trim();
         if (styleName.isEmpty()) styleName = "auto";
 
@@ -60,15 +61,14 @@ public class App {
             input = input.getParent();  //getParent() acquire parent directory
         }
         if (Files.isRegularFile(input) && input.toString().toLowerCase(Locale.ROOT).endsWith(".zip")) {
-            // get zip file base name without extension
             String zipFileName = input.getFileName().toString();
             int dot = zipFileName.lastIndexOf('.');
-            if (dot > 0) zipFileName = zipFileName.substring(0, dot);   //stripExt():delete the extension name of file
+            if (dot > 0) zipFileName = zipFileName.substring(0, dot);
 
             ZipShapefilePublisher zp = new ZipShapefilePublisher();
-            String zipDir = zp.ZipShapefileP(geoserverUrl, path, user, pass, workspace, datastore, zipFileName);  //getParent() acquire parent directory
-            input = Paths.get(zipDir);
-            // zipFileName is available here for later use if needed
+            // 现在传入 Path，并只返回解压目录 Path
+            Path extracted = zp.extractZipToDataDir(input, workspace, datastore, zipFileName);
+            input = extracted;
         }
         String folder = input.toAbsolutePath().toString();  //将路径转换为绝对路径,字符串形式的路径，无论输入是shapefile or folder
 

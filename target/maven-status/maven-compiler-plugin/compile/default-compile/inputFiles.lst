@@ -1,4 +1,8 @@
 D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\App.java
+D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\AppConfig.java
+D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\FileUtils.java
 D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\GeoServerClient.java
 D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\model\BoundingBox.java
+D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\server\PublishService.java
+D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\util\HttpUtils.java
 D:\JavaCodeFiles\ShapeAutoPublishJ\src\main\java\com\example\geoserver\ZipShapefilePublisher.java
